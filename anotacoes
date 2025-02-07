@@ -1,0 +1,27 @@
+
+/*REQUISITOS
+--pessoa com menos que a idade classificativa do jogo, nn podem entrar no chat do jogo
+--avisar notificacao de nova comunidade
+--posso fzr dps um coiso de escolher os generos de jogo q o usuario gosta, dai da pra fazer filtro de preferencia*/
+--tenho que verificar automaticamente se o usuario recebeu mais de 3 denuncias assim que uma denuncia é feita, se sim, criar endpoint para mostrar ao adm isso, o mesmo para o denunciante, só que dednunciante a partir de 5
+
+
+
+
+
+
+no front, pra criptografar a senha
+    npm install crypto-js
+const CryptoJS = require('crypto-js'); // Se estiver usando Node.js, ou use a versão CDN no browser
+
+function gerarHashSHA256(senha) {
+    return CryptoJS.SHA256(senha).toString(CryptoJS.enc.Base64);  // Retorna a senha como hash em Base64
+}
+
+// Exemplo de uso
+const senha = "minhaSenhaSuperSecreta";
+const senhaHash = gerarHashSHA256(senha);
+
+console.log(senhaHash); // Você verá o hash da senha (em Base64) para enviar ao servidor
+
+
