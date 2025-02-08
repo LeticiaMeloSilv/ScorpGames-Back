@@ -23,5 +23,13 @@ const senha = "minhaSenhaSuperSecreta";
 const senhaHash = gerarHashSHA256(senha);
 
 console.log(senhaHash); // Você verá o hash da senha (em Base64) para enviar ao servidor
+       
+       
+       
+       
+       
+       
+       
+        const verificado = await argon2.verify(hash, senha);
 
 

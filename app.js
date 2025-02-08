@@ -23,12 +23,11 @@ const bodyParserJSON = bodyParser.json()
 
 //*******************************************************************************USUARIOS********************************************************************************************/
 //lista todos os usuarios
-app.get('/v1/scorpgames/usuarios', cors(), async function (request, response) {
+app.get('/v1/scorpgames/usuarios?page=1&size=10', cors(), async function (request, response) {
     let dadosUsuarios = await controllerUsuarios.getListarUsuarios()
 
     response.json(dadosUsuarios)
-    response.status(200)
-
+    response.status(dadosUsuarios.status_code)
 })//:)
 
 //pega o usuarios pelo nome
@@ -37,7 +36,7 @@ app.get('/v1/scorpgames/usuarios/nome', cors(), async function (request, respons
     let dadosUsuario = await controllerUsuarios.getBuscarUsuarioNome(nome)
 
     response.json(dadosUsuario)
-    response.status(200)
+    response.status(dadosUsuario.status_code)
 })//:)
 
 //pega o usuario por id
@@ -103,55 +102,21 @@ app.get('/v1/scorpgames/usuario', cors(), bodyParserJSON, async (request, respon
     let contentType = request.headers['content-type']
     let dadosBody = request.body
     let dadosUsuario = await controllerUsuarios.getValidarUsuario(dadosBody.email, dadosBody.senha, contentType)    
+    console.log(dadosUsuario);
+    
     response.status(dadosUsuario.status_code);
     response.json(dadosUsuario)
-})//:)
+})
 
 
+//pega o usuarios pelo nome
+app.get('/v1/scorpgames/favoritos/usuario/:id', cors(), async function (request, response) {
+    let id = request.params.id
+    let dadosUsuario = await controllerUsuarios.getBuscarFavoritosUsuarioById(id)
 
-
-
-
-
-
-//cadastra novo usuario
-app.post('/v2/scorpgames/usuario', cors(), bodyParserJSON, async function (request, response) {
-
-    let contentType=request.headers['content-type']
-    let dadosBody = request.body
-    
-    let resultDadosNovoUsuario = await controllerUsuarios.setInserirUsuarioV2(dadosBody,contentType)
-
-    response.status(resultDadosNovoUsuario.status_code)
-    response.json(resultDadosNovoUsuario)
-})//:)
-
-
-
-//FAZER ESSES DAQUI USANDO O ARGON2
-//atualiza senha
-app.put('/v1/scorpgames/usuario/validacao/:id', cors(), bodyParserJSON, async function (request, response) {
-    let idUsuario = request.params.id
-console.log('a');
-
-    let contentType=request.headers['content-type']
-    let dadosBody = request.body
-    
-    let resultDadosNovoUsuario = await controllerUsuarios.setAtualizarSenhaUsuario(idUsuario,dadosBody,contentType)
-console.log(resultDadosNovoUsuario);
-
-    response.status(resultDadosNovoUsuario.status_code)
-    response.json(resultDadosNovoUsuario)
-})//:)
-//login
-app.get('/v1/scorpgames/usuario', cors(), bodyParserJSON, async (request, response, next) => {
-    let contentType = request.headers['content-type']
-    let dadosBody = request.body
-    let dadosUsuario = await controllerUsuarios.getValidarUsuario(dadosBody.email, dadosBody.senha, contentType)    
-    response.status(dadosUsuario.status_code);
     response.json(dadosUsuario)
+    response.status(dadosUsuario.status_code)
 })//:)
-
 
 app.listen('8080', function () {
     console.log('API funcionando!!!! Bom trabalho, dá uma descansada, um cafézinho nunca cai mal!!')
