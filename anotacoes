@@ -33,3 +33,10 @@ console.log(senhaHash); // Você verá o hash da senha (em Base64) para enviar a
         const verificado = await argon2.verify(hash, senha);
 
 
+http://localhost:8080/v1/scorpgames/favoritos/usuario/1  arrumar a data
+
+atualizar usuario arrumar a data
+
+tirar senha do inserir usuario
+login arrumar a data
+

@@ -294,6 +294,9 @@ const setAtualizarUsuario = async function (id, dadoAtualizado, contentType) {
                             if (validacaoEmail == '') {
                                 let usuarioAtualizado = await usuarioDao.updateUsuario(id, dadoAtualizado)
                                 if (usuarioAtualizado) {
+                                    
+                        let dataFormatada = await validacoes.validateReturnData(dadoAtualizado.data_nascimento)
+                        dadoAtualizado.data_nascimento = dataFormatada
                                     updateUsuarioJSON.usuario = dadoAtualizado
                                     updateUsuarioJSON.status = message.SUCESS_UPDATED_ITEM.status
                                     updateUsuarioJSON.status_code = message.SUCESS_UPDATED_ITEM.status_code
@@ -403,8 +406,6 @@ const setExcluirUsuario = async function (id) {
                     return updateUsuarioJSON
 
                 } else {
-                    console.log('aq');
-
                     return message.ERROR_INTERNAL_SERVER_DB
                 }
             } else {
@@ -422,13 +423,21 @@ const getBuscarFavoritosUsuarioById = async function (id) {
         let idUsuario = id
         let usuarioJSON = {}
         if (idUsuario == '' || idUsuario == undefined || isNaN(idUsuario)) {
-            console.log(idUsuario);
 
             return message.ERROR_INVALID_ID;
         } else {
             let dadosUsuario = await usuarioDao.selectJogosFavoritosByID(idUsuario);
             if (dadosUsuario) {
                 if (dadosUsuario.length > 0) {
+                    let dataFormatada;
+                let cont = 0;
+                
+                while (cont < dadosUsuario.length) {
+                    dataFormatada = await validacoes.validateReturnData(dadosUsuario[cont].data_lancamento)
+                    dadosUsuario[cont].data_lancamento = dataFormatada
+                    cont++
+                    
+                }
                     usuarioJSON.favoritos = dadosUsuario;
                     usuarioJSON.status_code = 200;
                     return usuarioJSON
@@ -439,8 +448,9 @@ const getBuscarFavoritosUsuarioById = async function (id) {
                 return message.ERROR_INTERNAL_SERVER_DB;
             }
         }
-
+        
     } catch (error) {
+        console.log(error);
         return message.ERROR_INTERNAL_SERVER
     }
 }
@@ -528,6 +538,8 @@ const setInserirUsuario = async function (dadosUsuario, contentType) {
 
                         let dataFormatada = await validacoes.validateReturnData(dadosUsuario.data_nascimento)
                         dadosUsuario.data_nascimento = dataFormatada
+                        
+                        delete dadosUsuario.senha;
                         novoUsuarioJSON.usuario = dadosUsuario
                         novoUsuarioJSON.status = message.SUCESS_CREATED_ITEM.status
                         novoUsuarioJSON.status_code = message.SUCESS_CREATED_ITEM.status_code
@@ -583,14 +595,16 @@ const setAtualizarSenhaUsuario = async function (id, dadoAtualizado, contentType
                     const hash = await argon2.hash(dadoAtualizado.senha);
                     const arraySenha = {}
                     arraySenha.senha_ativa = 1
-
                     arraySenha.senha = hash
                     arraySenha.id_usuario = id
                     const novaSenha = await usuarioDao.insertSenha(arraySenha)
+                    
                     if (novaSenha) {
+                        let ultimoID = await usuarioDao.getIDAutentificacao()
 
 
-                        let usuarioAtualizado = await usuarioDao.updateSenha(id)
+                        let usuarioAtualizado = await usuarioDao.updateSenha(id, Number(ultimoID[0].id))
+                                                                    
                         if (usuarioAtualizado) {
                             updateUsuarioJSON.status = message.SUCESS_UPDATED_ITEM.status
                             updateUsuarioJSON.status_code = message.SUCESS_UPDATED_ITEM.status_code
@@ -598,7 +612,15 @@ const setAtualizarSenhaUsuario = async function (id, dadoAtualizado, contentType
 
                             return updateUsuarioJSON
                         } else {
-                            return message.ERROR_INTERNAL_SERVER_DB
+                            let deletarUsuario = await usuarioDao.deleteSenha(Number(ultimoID[0].id))
+                            if (deletarUsuario) {
+
+                            }
+                            else {
+
+                                return message.ERROR_INTERNAL_SERVER_DB
+
+                            }
                         }
                     }
                     else {
@@ -624,6 +646,8 @@ const setAtualizarSenhaUsuario = async function (id, dadoAtualizado, contentType
     }
 
 }
+
+
 const getValidarUsuario = async (email, senha, contentType) => {
     try {
         if (String(contentType).toLowerCase() == 'application/json') {
@@ -636,18 +660,22 @@ const getValidarUsuario = async (email, senha, contentType) => {
                 return message.ERROR_REQUIRED_FIELDS
             } else {
                 let dadosUsuario = await usuarioDao.selectByEmailUsuario(emailUsuario)
-                console.log(dadosUsuario);
 
                 if (dadosUsuario) {
 
                     if (dadosUsuario.length > 0) {
 
                         const verificado = await argon2.verify(dadosUsuario[0].senha, senha);
+                        
                         if (verificado) {
-                            console.log(verificado);
                             delete dadosUsuario[0].senha;
                             delete dadosUsuario[0].senha_ativa;
                             delete dadosUsuario[0].id_autentificacao;
+
+                            let dataFormatada = await validacoes.validateReturnData(dadosUsuario[0].data_nascimento)
+                            dadosUsuario[0].data_nascimento = dataFormatada
+console.log(dataFormatada);
+
                             UsuarioJSON.status = message.SUCESS_VALIDATED_ITEM.status
                             UsuarioJSON.status_code = message.SUCESS_VALIDATED_ITEM.status_code
                             UsuarioJSON.message = message.SUCESS_VALIDATED_ITEM.message
@@ -655,7 +683,7 @@ const getValidarUsuario = async (email, senha, contentType) => {
 
                             return UsuarioJSON
                         }
-                        else {
+                        else {                            
                             return message.ERROR_NOT_FOUND
                         }
 
@@ -664,7 +692,6 @@ const getValidarUsuario = async (email, senha, contentType) => {
                         return message.ERROR_NOT_FOUND
                     }
                 } else {
-                    console.log("647");
 
                     return message.ERROR_INTERNAL_SERVER_DB
                 }

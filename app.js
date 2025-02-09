@@ -23,7 +23,10 @@ const bodyParserJSON = bodyParser.json()
 
 //*******************************************************************************USUARIOS********************************************************************************************/
 //lista todos os usuarios
-app.get('/v1/scorpgames/usuarios?page=1&size=10', cors(), async function (request, response) {
+app.get('/v1/scorpgames/usuarios/page=1&size=10', cors(), async function (request, response) {
+    let page = request.query.page
+    let size = request.query.size
+
     let dadosUsuarios = await controllerUsuarios.getListarUsuarios()
 
     response.json(dadosUsuarios)
@@ -72,13 +75,11 @@ app.delete('/v1/scorpgames/usuario/:id', cors(), async function (request,respons
 //atualiza usuario
 app.put('/v1/scorpgames/usuario/:id', cors(), bodyParserJSON, async function (request, response) {
     let idUsuario = request.params.id
-    console.log('entrou aq');
 
     let contentType=request.headers['content-type']
     let dadosBody = request.body
     
     let resultDadosNovoUsuario = await controllerUsuarios.setAtualizarUsuario(idUsuario,dadosBody,contentType)
-console.log(resultDadosNovoUsuario);
 
     response.status(resultDadosNovoUsuario.status_code)
     response.json(resultDadosNovoUsuario)
@@ -86,7 +87,6 @@ console.log(resultDadosNovoUsuario);
 //atualiza senha
 app.put('/v1/scorpgames/usuario/validacao/:id', cors(), bodyParserJSON, async function (request, response) {
     let idUsuario = request.params.id
-console.log('a');
 
     let contentType=request.headers['content-type']
     let dadosBody = request.body
@@ -102,7 +102,6 @@ app.get('/v1/scorpgames/usuario', cors(), bodyParserJSON, async (request, respon
     let contentType = request.headers['content-type']
     let dadosBody = request.body
     let dadosUsuario = await controllerUsuarios.getValidarUsuario(dadosBody.email, dadosBody.senha, contentType)    
-    console.log(dadosUsuario);
     
     response.status(dadosUsuario.status_code);
     response.json(dadosUsuario)

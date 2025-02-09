@@ -148,13 +148,15 @@ const updateUsuario = async function (id, dadoAtualizado) {
         return false
     }
 }
-const updateSenha = async function (id) {
+const updateSenha = async function (id,idNovaSenha) {
     let sql;
+    
     try {
         sql = `UPDATE tbl_autentificacao
         SET
-            senha_ativa = false
-        WHERE id_usuario = ${id} and senha_ativa=true`
+            senha_ativa = 0
+        WHERE id_usuario = ${id} and senha_ativa=1 AND id_autentificacao != ${idNovaSenha}
+`
         let result = await prisma.$executeRawUnsafe(sql)
         if (result) {
             return true
@@ -185,7 +187,7 @@ WHERE u.id_usuario = ${id}`
     }
 }//feito
 const deleteSenha = async function (id) {
-    try {        
+    try {               
         
         let sql = `delete from tbl_autentificacao where id_usuario = ${id}`
         let rsUsuario = await prisma.$executeRawUnsafe(sql)
@@ -238,7 +240,6 @@ const selectByEmailUsuario = async function (email) {
     try {
         let sql = `select * from tbl_usuarios join tbl_autentificacao on tbl_usuarios.id_usuario=tbl_autentificacao.id_usuario where email='${email}' and tbl_autentificacao.senha_ativa=1;`
         let rsUsuario = await prisma.$queryRawUnsafe(sql)
-        console.log(rsUsuario);
         
         if (rsUsuario) {
             
@@ -256,6 +257,16 @@ const selectByEmailUsuario = async function (email) {
 const getIDUsuario = async function () {
     try {
         let sql_id = `select cast(last_insert_id() as DECIMAL) as id from tbl_usuarios limit 1;`
+        let rsUsuario = await prisma.$queryRawUnsafe(sql_id)
+        return rsUsuario
+    } catch (error) {
+        return false
+    }
+
+}//feito
+const getIDAutentificacao = async function () {
+    try {
+        let sql_id = `select cast(last_insert_id() as DECIMAL) as id from tbl_autentificacao limit 1;`
         let rsUsuario = await prisma.$queryRawUnsafe(sql_id)
         return rsUsuario
     } catch (error) {
@@ -327,5 +338,6 @@ module.exports = {
     selectJogosFavoritosByID,
     updateSenha,
     selectByEmailUsuario,
-    deleteSenha
+    deleteSenha,
+    getIDAutentificacao
 }
